@@ -1,0 +1,95 @@
+{% INCLUDE 'overall_header.html' %}
+<!-- acp_fluxbb_to_phpbb_converter.html -->
+<h1>{L_ACP_FLUXBB_TO_PHPBB_CONVERTER}</h1>
+<p>{L_ACP_FLUXBB_TO_PHPBB_WELCOME}</p>
+<div class="converter-buttons-container">
+        <fieldset>
+            <legend>{L_ACP_FLUXBB_TO_PHPBB_CONVERTER}</legend>
+                <form id="reset_users_form" method="post" action="{U_ACTION}" data-ajax="true">
+                    <dl>
+                        <dt><label for="reset_users_button">{L_CONVERT_RESET_USERS}</label><br /><span>&nbsp;</span></dt>
+                        <dd>
+                            <input type="hidden" name="action" value="reset_users" />
+                            <input class="action_online" type="submit" id="reset_users_button" name="action_online" value="{L_CONVERT_RESET}" />
+                        </dd>
+                    </dl>
+                </form>
+
+                <form id="reset_data_form" method="post" action="{U_ACTION}" data-ajax="true">
+                    <dl>
+                        <dt><label for="reset_data_button">{L_CONVERT_RESET_DATA}</label><br /><span>&nbsp;</span></dt>
+                        <dd>
+                            <input type="hidden" name="action" value="reset_data" />
+                            <input class="action_online" type="submit" id="reset_data_button" name="action_online" value="{L_CONVERT_RESET}" />
+                        </dd>
+                    </dl>
+                </form>
+
+                <form id="import_users_form" method="post" action="{U_ACTION}" class="fluxbb_to_phpbb_ajax_form">
+                    <dl>
+                        <dt><label for="import_users_button">{L_CONVERT_IMPORT_USERS}</label><br /><span>&nbsp;</span></dt>
+                        <dd>
+                            <input type="hidden" name="action" value="import_users" />
+                            <input class="action_online" type="submit" id="import_users_button" name="action_online" value="{L_CONVERT_IMPORT}" />
+                            <span class="proccess-pm"></span> <span class="proccess-count"></span>
+                        </dd>
+                    </dl>
+                </form>
+
+                <form id="import_forums_form" method="post" action="{U_ACTION}" class="fluxbb_to_phpbb_ajax_form">
+                    <dl>
+                        <dt><label for="import_forums_button">{L_CONVERT_IMPORT_FORUMS}</label><br /><span>&nbsp;</span></dt>
+                        <dd>
+                            <input type="hidden" name="action" value="import_forums" />
+                            <input class="action_online" type="submit" id="import_forums_button" name="action_online" value="{L_CONVERT_IMPORT}" />
+                            <span class="proccess-pm"></span> <span class="proccess-count"></span>
+                        </dd>
+                    </dl>
+                </form>
+                <form id="import_categories_form" method="post" action="{U_ACTION}" class="fluxbb_to_phpbb_ajax_form">
+                    <dl>
+                        <dt><label for="import_categories_button">{L_CONVERT_IMPORT_CATEGORIES}</label><br /><span>&nbsp;</span></dt>
+                        <dd>
+                            <input type="hidden" name="action" value="import_categories" />
+                            <input class="action_online" type="submit" id="import_categories_button" name="action_online" value="{L_CONVERT_IMPORT}" />
+                            <span class="proccess-pm"></span> <span class="proccess-count"></span>
+                        </dd>
+                    </dl>
+                </form>
+
+                <form id="import_topics_form" method="post" action="{U_ACTION}" class="fluxbb_to_phpbb_ajax_form">
+                    <dl>
+                        <dt><label for="import_topics_button">{L_CONVERT_IMPORT_TOPICS}</label><br /><span>&nbsp;</span></dt>
+                        <dd>
+                            <input type="hidden" name="action" value="import_topics" />
+                            <input class="action_online" type="submit" id="import_topics_button" name="action_online" value="{L_CONVERT_IMPORT}" />
+                            <span class="proccess-pm"></span> <span class="proccess-count"></span>
+                        </dd>
+                    </dl>
+                </form>
+
+                <form id="import_posts_form" method="post" action="{U_ACTION}" class="fluxbb_to_phpbb_ajax_form">
+                    <dl>
+                        <dt><label for="import_posts_button">{L_CONVERT_IMPORT_POSTS}</label><br /><span>&nbsp;</span></dt>
+                        <dd>
+                            <input type="hidden" name="action" value="import_posts" />
+                            <input class="action_online" type="submit" id="import_posts_button" name="action_online" value="{L_CONVERT_IMPORT}" />
+                            <span class="proccess-pm"></span> <span class="proccess-count"></span>
+                        </dd>
+                    </dl>
+                </form>
+                <form id="import_bots_form" method="post" action="{U_ACTION}" class="fluxbb_to_phpbb_ajax_form">
+                    <dl>
+                        <dt><label for="import_bots_button">{L_CONVERT_IMPORT_BOTS}</label><br /><span>&nbsp;</span></dt>
+                        <dd>
+                            <input type="hidden" name="action" value="insert_bots" />
+                            <input class="action_online" type="submit" id="import_bots_button" name="action_online" value="{L_CONVERT_IMPORT}" />
+                            <span class="proccess-pm"></span> <span class="proccess-count"></span>
+                        </dd>
+                    </dl>
+                </form>
+
+        </fieldset>
+</div>
+# {% INCLUDEJS 'script.js' %}
+{% INCLUDE 'overall_footer.html' %}

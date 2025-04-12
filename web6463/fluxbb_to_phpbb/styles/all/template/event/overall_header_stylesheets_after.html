@@ -1,0 +1,16 @@
+{% if FLUXBB_TO_PHPBB_URL || FLUXBB_TO_PHPBB_WIDTH || FLUXBB_TO_PHPBB_HEIGHT %}
+	{% if FLUXBB_TO_PHPBB_URL %}
+		{% set logoUrl = FLUXBB_TO_PHPBB_URL %}
+		{% if not (logoUrl starts with 'http://' or logoUrl starts with 'https://') %}
+			{% set logoUrl = ROOT_PATH ~ FLUXBB_TO_PHPBB_URL %}
+		{% endif %}
+	{% endif %}
+<style>
+	.site_logo {
+		{% if FLUXBB_TO_PHPBB_URL %}background-image: url("{{ logoUrl }}");{% endif %}
+		{% if FLUXBB_TO_PHPBB_WIDTH %}width: {{ FLUXBB_TO_PHPBB_WIDTH }}px;{% endif %}
+		{% if FLUXBB_TO_PHPBB_HEIGHT %}height: {{ FLUXBB_TO_PHPBB_HEIGHT }}px;{% endif %}
+		background-size: contain;
+	}
+</style>
+{% endif %}

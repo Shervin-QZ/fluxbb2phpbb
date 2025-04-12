@@ -1,0 +1,9 @@
+services:
+    web6463.fluxbb_to_phpbb.listener:
+        class: web6463\fluxbb_to_phpbb\event\listener
+        arguments:
+            - '@request'
+            - '@user'
+            - '@config'
+        tags:
+            - { name: event.listener }

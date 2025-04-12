@@ -1,0 +1,7 @@
+web6463_fluxbb_to_phpbb_controller:
+    path: /acp/fluxbb_to_phpbb
+    defaults:
+        _controller: web6463.fluxbb_to_phpbb.controller.fluxbb_to_phpbb_controller::handle_page
+    requirements:
+        _extension: web6463/fluxbb_to_phpbb
+

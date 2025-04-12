@@ -1,0 +1,40 @@
+{% INCLUDE 'overall_header.html' %}
+<h1>{{ lang('ACP_FLUXBB_TO_PHPBB_HEADING') }}</h1>
+<form id="acp_board" method="post" action="{{ U_ACTION }}">
+	<fieldset>
+		<legend>{{ lang('ACP_GENERAL_CONFIGURATION') }}</legend>
+		<dl>
+			<dt>
+				<label for="fluxbb_to_phpbb_tb_prefix">{{ lang('ACP_FLUXBB_TO_PHPBB_TB_PREFIX') ~ lang('COLON') }}</label><br>
+				<span>{{ lang('ACP_FLUXBB_TO_PHPBB_TB_PREFIX_EXPLAIN') }}</span>
+			</dt>
+			<dd>
+				<input id="fluxbb_to_phpbb_tb_prefix" name="fluxbb_to_phpbb_tb_prefix" type="text" size="255" value="{{ FLUXBB_TO_PHPBB_TB_PREFIX }}">
+			</dd>
+		</dl>
+		<dl>
+			<dt>
+				<label for="fluxbb_to_phpbb_tb_limit">{{ lang('ACP_FLUXBB_TO_PHPBB_TB_LIMIT') ~ lang('COLON') }}</label><br>
+				<span>{{ lang('ACP_FLUXBB_TO_PHPBB_TB_LIMIT_EXPLAIN') }}</span>
+			</dt>
+			<dd>
+				<input id="fluxbb_to_phpbb_tb_limit" name="fluxbb_to_phpbb_tb_limit" type="text" size="255" value="{{ FLUXBB_TO_PHPBB_TB_LIMIT }}">
+			</dd>
+		</dl>
+		<dl>
+			<dt>
+				<label for="fluxbb_to_phpbb_avatars_dir">{{ lang('ACP_FLUXBB_TO_PHPBB_AVATARS_DIR') ~ lang('COLON') }}</label><br>
+				<span>{{ lang('ACP_FLUXBB_TO_PHPBB_AVATARS_DIR_EXPLAIN') }}</span>
+			</dt>
+			<dd>
+				<input id="fluxbb_to_phpbb_avatars_dir" name="fluxbb_to_phpbb_avatars_dir" type="text" size="255" value="{{ FLUXBB_TO_PHPBB_AVATARS_DIR }}">
+			</dd>
+		</dl>
+	</fieldset>
+	<p class="submit-buttons">
+		{{ S_FORM_TOKEN }}
+		<input class="button1" type="submit" name="submit" value="{{ lang('SUBMIT') }}">&nbsp;
+		<input class="button2" type="reset" name="reset" value="{{ lang('RESET') }}">
+	</p>
+</form>
+{% INCLUDE 'overall_footer.html' %}
