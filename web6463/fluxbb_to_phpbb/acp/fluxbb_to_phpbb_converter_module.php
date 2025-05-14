@@ -110,7 +110,8 @@ class fluxbb_to_phpbb_converter_module
                                             'username'          => $row['username'],
                                             'username_clean'    => $row['username'],
                                             'user_email'        => $row['email'],
-                                            'user_password'     => $passwords_manager->hash($row['password']),
+											'user_password'     => '$sha1$' . $row['password'],
+                                            //'user_password'     => $passwords_manager->hash($row['password']),
                                             'user_passchg'      => time(),
                                             'user_form_salt'    => unique_id(),
                                             'user_regdate'      => $row['registered'],
@@ -124,7 +125,7 @@ class fluxbb_to_phpbb_converter_module
                                             'user_avatar_type'  => ($user_avatar)?'avatar.driver.upload':'',
                                             'user_avatar_height'=> ($user_avatar)?60:0,
                                             'user_avatar_width' => ($user_avatar)?60:0,
-                                            'user_sig'          => ($row['signature'])?:'',
+                                            'user_sig'          => ($row['signature'])?$this->do_bbcode($row['signature']):'',
                                             'user_type'         => 3,
                                             'user_new'          => 0,
                                             'user_lang'         => ($this->getLanguagesList($row['language']))?:$default_lang,
@@ -196,7 +197,12 @@ class fluxbb_to_phpbb_converter_module
                                 if(!$check_import_forums AND $check_import_users){
                                     $sql_ary = array();
                                     $offset = (int)$this->get_config($config,'fluxbb_to_phpbb_offset_forums', 0 );                                
-                                    $result = $db->sql_query('SELECT * FROM '.$fluxbb_db_prefix.'forums ORDER BY id ASC LIMIT '.$offset.','.$fluxbb_db_limit);
+									$forums_sql = sprintf('SELECT * FROM %sforums ORDER BY id ASC LIMIT %d, %d',
+										$fluxbb_db_prefix,
+										(int)$offset,
+										(int)$fluxbb_db_limit
+									);
+									$result = $db->sql_query($forums_sql);
                                     while ($row = $db->sql_fetchrow($result)){
                                         $sql_ary[$row['id']]['insert'] = array(
                                             'forum_id'                  => (int) $row['id'],
@@ -271,7 +277,10 @@ class fluxbb_to_phpbb_converter_module
                                         }
                                     }
                                     $db->sql_freeresult($result);
-                                    $result_count = $db->sql_query('SELECT COUNT(id) AS all_count FROM '.$fluxbb_db_prefix.'forums');
+									$result_count_sql = sprintf('SELECT COUNT(id) AS all_count FROM %sforums', 
+										$fluxbb_db_prefix
+									);
+									$result_count = $db->sql_query($result_count_sql);
                                     $all_count = $db->sql_fetchfield('all_count');
                                     $db->sql_freeresult($result_count);
                                     if($all_count > $offset + count($sql_ary)){
@@ -305,7 +314,11 @@ class fluxbb_to_phpbb_converter_module
                                 if(!$check_import_categories AND $check_import_forums){
                                     $sql_ary = array();
                                     $offset = (int)$this->get_config($config,'fluxbb_to_phpbb_offset_categories', 0 );                                
-                                    $result = $db->sql_query('SELECT * FROM '.$fluxbb_db_prefix.'categories ORDER BY id ASC LIMIT '.$offset.',1');
+                                    $categories_sql = sprintf('SELECT * FROM %scategories ORDER BY id ASC LIMIT %d, 1',
+										$fluxbb_db_prefix,
+										(int)$offset
+									);
+									$result = $db->sql_query($categories_sql);
                                     $category = $db->sql_fetchrow($result);
                                     if($category){
                                         $category_data = array(
@@ -359,7 +372,11 @@ class fluxbb_to_phpbb_converter_module
                                             $acp_forums->update_forum_data($category_data);
                                             $parent_id = $this->get_parent_id();
                                             $this->acl_groups($parent_id);
-                                            $result_forums = $db->sql_query('SELECT * FROM '.$fluxbb_db_prefix.'forums WHERE cat_id = "'.$category['id'].'" ORDER BY id ASC');
+											$forums_sql = sprintf('SELECT * FROM %sforums WHERE cat_id = %d ORDER BY id ASC',
+												$fluxbb_db_prefix,
+												(int)$category['id']
+											);
+											$result_forums = $db->sql_query($forums_sql);
                                             while ($forum_data_sql = $db->sql_fetchrow($result_forums)){
                                                 $forum_data = [];
                                                 $forum_data['parent_id'] = $parent_id;
@@ -367,7 +384,7 @@ class fluxbb_to_phpbb_converter_module
                                                 //$forum_data_sql['parent_id'] = $parent_id;
                                                 $sql = 'UPDATE ' . FORUMS_TABLE . '
                                                     SET ' . $db->sql_build_array('UPDATE', $forum_data) . '
-                                                    WHERE forum_id = ' . $forum_data_sql['id'];
+                                                    WHERE forum_id = ' . (int)$forum_data_sql['id'];
                                                 $db->sql_query($sql);
                                             }
                                             $db->sql_freeresult($result_forums);                                            
@@ -408,7 +425,12 @@ class fluxbb_to_phpbb_converter_module
                                     $sql_ary = array();
                                     $sql_topics_track = array();
                                     $offset = (int)$this->get_config($config,'fluxbb_to_phpbb_offset_topics', 0 );
-                                    $result = $db->sql_query('SELECT * FROM '.$fluxbb_db_prefix.'topics ORDER BY id ASC LIMIT '.$offset.','.$fluxbb_db_limit);
+									$topics_sql = sprintf('SELECT * FROM %stopics ORDER BY id ASC LIMIT %d, %d',
+										$db->sql_escape($fluxbb_db_prefix),
+										$offset,
+										$limit
+									);
+                                    $result = $db->sql_query($topics_sql);
                                     while ($row = $db->sql_fetchrow($result))
                                     {
                                         $sql_ary[] = array(
@@ -445,7 +467,7 @@ class fluxbb_to_phpbb_converter_module
                                     {
                                         $db->sql_multi_insert(TOPICS_TRACK_TABLE, $sql_topics_track);
                                     }
-                                    $result_count = $db->sql_query('SELECT COUNT(id) AS all_count FROM '.$fluxbb_db_prefix.'topics');
+                                    $result_count = $db->sql_query(sprintf('SELECT COUNT(id) AS all_count FROM %stopics', $db->sql_escape($fluxbb_db_prefix)));
                                     $all_count = $db->sql_fetchfield('all_count');
                                     $db->sql_freeresult($result_count);
                                     if($all_count > $offset + count($sql_ary)){
@@ -476,33 +498,45 @@ class fluxbb_to_phpbb_converter_module
                                 if(!$check_import_posts AND $check_import_topics){
                                     $sql_ary = array();
                                     $offset = (int)$this->get_config($config, 'fluxbb_to_phpbb_offset_posts', 0 );
-                                    $result = $db->sql_query('SELECT * FROM '.$fluxbb_db_prefix.'posts ORDER BY id ASC LIMIT '.$offset.','.$fluxbb_db_limit);
-                                    while ($row = $db->sql_fetchrow($result))
-                                    {
-                                        $topic = $this->get_topic($row['topic_id']);
-                                        if($row['id'] == $topic['topic_first_post_id']){
-                                            $subject = $topic['topic_title'];
-                                        } else {
-                                            $subject = 'Re: '.$topic['topic_title'];
-                                        }
-                                        $sql_ary[] = array(
-                                            'post_id'           => (int) $row['id'],
-                                            'topic_id'          => (int) $row['topic_id'],
-                                            'forum_id'          => (int) $topic['forum_id'],
-                                            'post_subject'      => $subject,
-                                            'poster_id'         => $this->get_user($row['poster']),
-                                            'poster_ip'         => $row['poster_ip'],
-                                            'post_time'         => $row['posted'],
-                                            'post_text'         => $row['message'],
-                                            'post_visibility'   => 1,
-                                        );                                    
-                                    }                                
-                                    $db->sql_freeresult($result);
-                                    if (count($sql_ary))
-                                    {
-                                        $db->sql_multi_insert(POSTS_TABLE, $sql_ary);
-                                    }
-                                    $result_count = $db->sql_query('SELECT COUNT(id) AS all_count FROM '.$fluxbb_db_prefix.'posts');
+									$db->sql_transaction('begin');
+
+									// Select posts with valid topic_id (exclude orphaned posts)
+									$sql = sprintf('SELECT p.*, t.forum_id, t.subject, t.first_post_id
+										FROM %sposts AS p
+										INNER JOIN %1$stopics AS t ON t.id = p.topic_id
+										INNER JOIN %1$sforums AS f ON f.id = t.forum_id
+										WHERE t.id IS NOT NULL  -- Ensure we only get posts with valid topics
+										ORDER BY p.id ASC LIMIT %d, %d;',
+										$fluxbb_db_prefix,
+										$offset,
+										$fluxbb_db_limit
+									);
+
+									$result = $db->sql_query($sql);
+									while ($row = $db->sql_fetchrow($result))
+									{
+										// Prepare post data for migration
+										$sql_ary[] = array(
+											'post_id'           => (int) $row['id'],
+											'topic_id'          => (int) $row['topic_id'],
+											'forum_id'          => (int) $row['forum_id'],
+											'post_subject'      => $row['first_post_id'] == $row['id'] ? $row['subject'] : 'Re: ' .  $row['subject'],
+											'poster_id'         => $row['poster_id'],
+											'poster_ip'         => $row['poster_ip'],
+											'post_time'         => $row['posted'],
+											'post_text'         => $this->do_bbcode($row['message']),
+											'post_visibility'   => 1,  // Assuming 1 means visible
+										);
+									}
+
+									// Clean up and insert if we have valid posts
+									$db->sql_freeresult($result);
+									if (!empty($sql_ary))  // Safely check if we have any posts to insert
+									{
+										$db->sql_multi_insert(POSTS_TABLE, $sql_ary);
+									}
+                                    $db->sql_transaction('commit');
+                                    $result_count = $db->sql_query(sprintf('SELECT COUNT(id) AS all_count FROM %sposts', $db->sql_escape($fluxbb_db_prefix)));
                                     $all_count = $db->sql_fetchfield('all_count');
                                     $db->sql_freeresult($result_count);
                                     if($all_count > $offset + count($sql_ary)){
@@ -572,62 +606,131 @@ class fluxbb_to_phpbb_converter_module
             [7, $forum_id, 0, 15, 0],
         ];
 
-        // نام فیلدها
+        // fields name
         $fields = ['group_id', 'forum_id', 'auth_option_id', 'auth_role_id', 'auth_setting'];
 
-        // آرایه نهایی
+        // lastest array
         $result = [];
         foreach ($sql_values as $row) {
             $result[] = array_combine($fields, $row);
         } 
         $db->sql_multi_insert(ACL_GROUPS_TABLE, $result);   
     }
-    private function get_left_right(){
-        global $db;
-        $forum_data_sql = [];
-        $sql = 'SELECT MAX(right_id) AS right_id
-            FROM ' . FORUMS_TABLE;
-        $result = $db->sql_query($sql);
-        $row = $db->sql_fetchrow($result);
-        $db->sql_freeresult($result);
-        $forum_data_sql['left_id'] = $row['right_id'] + 1;
-        $forum_data_sql['right_id'] = $row['right_id'] + 2;
-        return $forum_data_sql;       
-    }
-    private function get_parent_id()
-    {
-        global $db;
-        $sql = 'SELECT *
-            FROM ' . FORUMS_TABLE . "
-            WHERE forum_type = ".FORUM_CAT." ORDER BY forum_id DESC ";
-        $result = $db->sql_query($sql);
-        $row = $db->sql_fetchrow($result);
-        $db->sql_freeresult($result);
+	/**
+	* Get left and right ID values for nested set forum structure
+	* 
+	* @return array Associative array with left_id and right_id values
+	*/
+	private function get_left_right() {
+		global $db;
+		
+		// Default values if table is empty or query fails
+		$forum_data_sql = [
+			'left_id' => 1,    // Default left ID
+			'right_id' => 2    // Default right ID
+		];
 
-        if (!$row)
-        {
-            return 0;
-        }
-        return $row['forum_id'];
-    }    
-    private function get_forum_info($forum_id)
-    {
-        global $db;
+		// Secure query using sprintf and table name escaping
+		$sql = sprintf('SELECT MAX(right_id) AS right_id FROM %s', 
+			$db->sql_escape(FORUMS_TABLE)
+		);
 
-        $sql = 'SELECT *
-            FROM ' . FORUMS_TABLE . "
-            WHERE forum_id = $forum_id";
-        $result = $db->sql_query($sql);
-        $row = $db->sql_fetchrow($result);
-        $db->sql_freeresult($result);
+		// Execute query
+		$result = $db->sql_query($sql);
+		
+		// Handle query errors
+		if (!$result) {
+			trigger_error('Could not get forum boundaries', E_USER_WARNING);
+			return $forum_data_sql; // Return safe defaults
+		}
 
-        if (!$row)
-        {
-            trigger_error("Forum #$forum_id does not exist", E_USER_ERROR);
-        }
+		// Fetch results
+		$row = $db->sql_fetchrow($result);
+		$db->sql_freeresult($result);
 
-        return $row;
-    }    
+		// Calculate new IDs if valid data exists
+		if ($row && isset($row['right_id'])) {
+			$forum_data_sql['left_id'] = (int)$row['right_id'] + 1;
+			$forum_data_sql['right_id'] = (int)$row['right_id'] + 2;
+		}
+
+		return $forum_data_sql;
+	}
+	/**
+	* Get the ID of the last category forum (parent forum)
+	* 
+	* @return int The forum_id of the last category or 0 if none found
+	*/
+	private function get_parent_id()
+	{
+		global $db;
+		
+		// Secure query using sprintf and constants
+		$sql = sprintf('SELECT forum_id 
+					FROM %s 
+					WHERE forum_type = %d 
+					ORDER BY forum_id DESC 
+					LIMIT 1',
+			$db->sql_escape(FORUMS_TABLE),
+			FORUM_CAT
+		);
+
+		$result = $db->sql_query($sql);
+		
+		// Return 0 immediately if query fails
+		if (!$result) {
+			trigger_error('Failed to fetch parent forum ID', E_USER_WARNING);
+			return 0;
+		}
+
+		$row = $db->sql_fetchrow($result);
+		$db->sql_freeresult($result);
+
+		// Return 0 if no results, otherwise return the forum_id
+		return $row ? (int)$row['forum_id'] : 0;
+	} 
+	/**
+	* Get forum information by forum ID
+	* 
+	* @param int $forum_id The ID of the forum to retrieve
+	* @return array Forum data array
+	* @throws ErrorException If forum doesn't exist
+	*/
+	private function get_forum_info($forum_id)
+	{
+		global $db;
+
+		// Validate and sanitize input
+		$forum_id = (int)$forum_id;
+		if ($forum_id <= 0) {
+			trigger_error('Invalid forum ID provided', E_USER_ERROR);
+		}
+
+		// Secure query using parameterized approach
+		$sql = sprintf('SELECT * 
+					FROM %s 
+					WHERE forum_id = %d',
+			$db->sql_escape(FORUMS_TABLE),
+			$forum_id
+		);
+
+		$result = $db->sql_query($sql);
+		
+		// Check for query errors
+		if (!$result) {
+			trigger_error('Database query failed', E_USER_ERROR);
+		}
+
+		$row = $db->sql_fetchrow($result);
+		$db->sql_freeresult($result);
+
+		// Verify forum exists
+		if (!$row) {
+			trigger_error(sprintf('Forum #%d does not exist', $forum_id), E_USER_ERROR);
+		}
+
+		return $row;
+	}   
 	private function generate_avatar_markup($user_id){
 		global $config, $phpbb_root_path;
 		$filetypes = array('jpg', 'gif', 'png');
@@ -660,73 +763,135 @@ class fluxbb_to_phpbb_converter_module
             return $default;
         }
     }
-    private function get_user($username){
-        global $db;
-        $sql = 'SELECT user_id, username
-                FROM ' . USERS_TABLE . '
-                WHERE username_clean = "' . $username.'" OR username = "' . $username.'"';
-            $result = $db->sql_query($sql);
-            $user_row = $db->sql_fetchrow($result);
-            $db->sql_freeresult($result);
-            if(isset($user_row['user_id'])){
-                return $user_row['user_id'];
-            } else {
-                return 2;
-            }
-        
-    }
-    private function check_user_exist($id, $username, $email){
-        global $db;
-        $sql = 'SELECT  COUNT(user_id) AS all_count
-                FROM ' . USERS_TABLE . '
-                WHERE user_id = ' . $id.' OR user_email = "' . $email.'" OR username_clean = "' . $username.'" OR username = "' . $username.'"';
-            $result = $db->sql_query($sql);
-            $all_count = $db->sql_fetchfield('all_count');
-            $db->sql_freeresult($result);
-            if($all_count > 0){
-                return true;
-            } else {
-                return false;
-            }
-        
-    }
-    private function get_topic($topic_id){
-        global $db;
-        $sql = 'SELECT *
-                FROM ' . TOPICS_TABLE . '
-                WHERE topic_id = "' . $topic_id.'"';
-            $result = $db->sql_query($sql);
-            $topic_row = $db->sql_fetchrow($result);
-            $db->sql_freeresult($result);
-            if($topic_row){
-                return $topic_row;
-            } 
-        
-    }
-    private function get_fluxbb_post($post_id, $prefix){
-        global $db;
-        $sql = 'SELECT t.subject as subject
-                FROM ' . $prefix . 'posts AS p
-                LEFT JOIN ' . $prefix . 'topics AS t ON p.topic_id = t.id
-                WHERE p.id = "' . $post_id.'"';
-            $result = $db->sql_query($sql);
-            $fluxbb_post_row = $db->sql_fetchrow($result);
-            $db->sql_freeresult($result);
-            if($fluxbb_post_row){
-                return $fluxbb_post_row['subject'];
-            } 
-        
-    }
-    private function get_group_id($group_name){
-        global $db;
-        $sql = 'SELECT group_id
-            FROM ' . GROUPS_TABLE . "
-            WHERE group_name = '".$group_name."'";
-        $result = $db->sql_query($sql);
-        $group_id = (int) $db->sql_fetchfield('group_id');
-        $db->sql_freeresult($result);
-        return $group_id;
-    }
+	/**
+	* Get user ID by username
+	* @param string $username Username to search for
+	* @return int User ID or 2 (default) if not found
+	*/
+	private function get_user($username) {
+		global $db;
+		
+		$clean_username = $db->sql_escape(utf8_clean_string($username));
+		$username = $db->sql_escape($username);
+		
+		$sql = sprintf('SELECT user_id 
+					FROM %s 
+					WHERE username_clean = "%s" OR username = "%s"',
+					USERS_TABLE,
+					$clean_username,
+					$username);
+		
+		$result = $db->sql_query($sql);
+		$user_row = $db->sql_fetchrow($result);
+		$db->sql_freeresult($result);
+		
+		return isset($user_row['user_id']) ? (int)$user_row['user_id'] : 2;
+	}
+
+	/**
+	* Check if user exists by ID, username or email
+	* @param int $id User ID
+	* @param string $username Username
+	* @param string $email Email
+	* @return bool True if user exists
+	*/
+	private function check_user_exist($id, $username, $email) {
+		global $db;
+		
+		$id = (int)$id;
+		$clean_username = $db->sql_escape(utf8_clean_string($username));
+		$username = $db->sql_escape($username);
+		$email = $db->sql_escape($email);
+		
+		$sql = sprintf('SELECT COUNT(user_id) AS all_count
+					FROM %s
+					WHERE user_id = %d OR user_email = "%s" 
+					OR username_clean = "%s" OR username = "%s"',
+					USERS_TABLE,
+					$id,
+					$email,
+					$clean_username,
+					$username);
+		
+		$result = $db->sql_query($sql);
+		$all_count = (int)$db->sql_fetchfield('all_count');
+		$db->sql_freeresult($result);
+		
+		return $all_count > 0;
+	}
+
+	/**
+	* Get topic by ID
+	* @param int $topic_id Topic ID
+	* @return array|null Topic data or null if not found
+	*/
+	private function get_topic($topic_id) {
+		global $db;
+		
+		$topic_id = (int)$topic_id;
+		
+		$sql = sprintf('SELECT *
+					FROM %s
+					WHERE topic_id = %d',
+					TOPICS_TABLE,
+					$topic_id);
+		
+		$result = $db->sql_query($sql);
+		$topic_row = $db->sql_fetchrow($result);
+		$db->sql_freeresult($result);
+		
+		return $topic_row;
+	}
+
+	/**
+	* Get post subject from FluxBB database
+	* @param int $post_id Post ID
+	* @param string $prefix Table prefix
+	* @return string|null Post subject or null if not found
+	*/
+	private function get_fluxbb_post($post_id, $prefix) {
+		global $db;
+		
+		$post_id = (int)$post_id;
+		$prefix = $db->sql_escape($prefix);
+		
+		$sql = sprintf('SELECT t.subject
+					FROM %sposts AS p
+					LEFT JOIN %stopics AS t ON p.topic_id = t.id
+					WHERE p.id = %d',
+					$prefix,
+					$prefix,
+					$post_id);
+		
+		$result = $db->sql_query($sql);
+		$row = $db->sql_fetchrow($result);
+		$db->sql_freeresult($result);
+		
+		return $row ? $row['subject'] : null;
+	}
+
+	/**
+	* Get group ID by name
+	* @param string $group_name Group name
+	* @return int Group ID or 0 if not found
+	*/
+	private function get_group_id($group_name) {
+		global $db;
+		
+		$group_name = $db->sql_escape($group_name);
+		
+		$sql = sprintf('SELECT group_id
+					FROM %s
+					WHERE group_name = "%s"',
+					GROUPS_TABLE,
+					$group_name);
+		
+		$result = $db->sql_query($sql);
+		$group_id = (int)$db->sql_fetchfield('group_id');
+		$db->sql_freeresult($result);
+		
+		return $group_id;
+	}
     private function inser_bots(){
         global $db, $config, $language, $phpbb_root_path;
         $group_id = $this->get_group_id('BOTS');
@@ -947,4 +1112,79 @@ class fluxbb_to_phpbb_converter_module
             return $all[$lan];
         }
     }
+	// Convert BBCodes to their HTML equivalent
+	//
+	private function do_bbcode($text, $is_signature = false)
+	{
+		global $pun_config;
+		// Quote handling with attribution
+		if (strpos($text, '[quote') !== false) {
+			// Standard quote
+			$text = preg_replace('%\[quote\]\s*%', '</p><div class="quotebox"><blockquote><div><p>', $text);
+			
+			// Quote with attribution
+			$text = preg_replace_callback(
+				'%\[quote=(["\']?)([^\r\n]+?)\\1\]%',
+				function($matches) {
+					$username = htmlspecialchars(trim($matches[2]), ENT_QUOTES);
+					return '</p><div class="quotebox"><cite>'.$username.' wrote:</cite><blockquote><div><p>';
+				},
+				$text
+			);
+			
+			$text = preg_replace('%\s*\[\/quote\]%S', '</p></div></blockquote></div><p>', $text);
+		}
+		// Basic text formatting
+		$patterns = [
+			'%\[b\](.*?)\[/b\]%ms' => '<strong>$1</strong>',
+			'%\[i\](.*?)\[/i\]%ms' => '<em>$1</em>',
+			'%\[u\](.*?)\[/u\]%ms' => '<span class="bbu">$1</span>',
+			'%\[s\](.*?)\[/s\]%ms' => '<span class="bbs">$1</span>',
+			'%\[code\](.*?)\[/code\]%ms' => '<code class="code">$1</code>',
+			'%\[color=([a-zA-Z]{3,20}|\#[0-9a-fA-F]{6}|\#[0-9a-fA-F]{3})](.*?)\[/color\]%ms' => '<span style="color: $1">$2</span>',
+			'%\[h\](.*?)\[/h\]%ms' => '</p><h5>$1</h5><p>'
+		];
+
+		$patterns['%\[img\](https?://[^\s<"]*?)\[/img\]%'] = function($m) use ($is_signature) {
+				return $this->handle_img_tag($m[1], $is_signature);
+			};
+		// Links and references
+		$patterns += [
+			'%\[url\]([^\[]*?)\[/url\]%' => function($m) { return $this->handle_url_tag($m[1]); },
+			'%\[url=([^\[]+?)\](.*?)\[/url\]%' => function($m) { return $this->handle_url_tag($m[1], $m[2]); },
+			'%\[email\]([^\[]*?)\[/email\]%' => '<a href="mailto:$1">$1</a>',
+			'%\[email=([^\[]+?)\](.*?)\[/email\]%' => '<a href="mailto:$1">$2</a>'
+		];
+
+		// Apply all replacements
+		foreach ($patterns as $pattern => $replacement) {
+			if (is_callable($replacement)) {
+				$text = preg_replace_callback($pattern, $replacement, $text);
+			} else {
+				$text = preg_replace($pattern, $replacement, $text);
+			}
+		}
+
+		return $text;
+	}
+
+	// Helper function to handle URL tags
+	private function handle_url_tag($url, $text = null)
+	{
+		if ($text === null) {
+			$text = $url;
+		}
+		return '<a href="'.htmlspecialchars($url).'">'.htmlspecialchars($text).'</a>';
+	}
+
+	// Helper function to handle image tags
+	private function handle_img_tag($url, $is_signature, $alt = null)
+	{
+		$max_width = $is_signature ? 500 : 800; // Example dimension limits
+		$max_height = 600;
+		
+		return '<img src="'.htmlspecialchars($url).'" '.
+			($alt ? 'alt="'.htmlspecialchars($alt).'" ' : '').
+			'style="max-width:'.$max_width.'px;max-height:'.$max_height.'px" />';
+	}	
 }
