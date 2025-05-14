@@ -28,7 +28,7 @@ $(document).ready(function() {
                             // Resubmit form with a delay
                             setTimeout(function() {
                                 submitFormWithOffset();
-                            }, 3000); // 3-second delay
+                            }, 100); // 0.1 second delay
                         } else {
                             enableActionButtons(); // Enable buttons if 'continue' is false
                             $form.find('.proccess-pm').html('done');
