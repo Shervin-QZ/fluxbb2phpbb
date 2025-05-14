@@ -21,9 +21,7 @@ fluxbb2phpbb/
 │   └── faq.md
 ├── sample_data/           # (Optional) Sample SQL dumps for testing
 │   └── fluxbb_sample.sql
-├── README.md              # Project documentation (this file)
-├── LICENSE                # License info (MIT recommended)
-└── TODO.md                # List of pending features and notes
+├── README.md              # Project documentation 
 ```
 
 ## 🚀 Usage
@@ -49,5 +47,4 @@ Please refer to the [`doc/guide.md`](doc/guide.md) for detailed migration steps 
 ## 🧑‍💻 Author
 Developed by [Shervin-QZ](https://github.com/Shervin-QZ)
 
-## 🪪 License
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
