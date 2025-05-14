@@ -428,7 +428,7 @@ class fluxbb_to_phpbb_converter_module
 									$topics_sql = sprintf('SELECT * FROM %stopics ORDER BY id ASC LIMIT %d, %d',
 										$db->sql_escape($fluxbb_db_prefix),
 										$offset,
-										$limit
+										$fluxbb_db_limit
 									);
                                     $result = $db->sql_query($topics_sql);
                                     while ($row = $db->sql_fetchrow($result))
